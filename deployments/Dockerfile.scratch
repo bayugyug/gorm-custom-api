@@ -1,0 +1,18 @@
+#start
+#FROM golang
+FROM scratch
+
+#auth
+MAINTAINER bayugyug<bayugyug@gmail.com>
+
+#envt
+
+#prepare
+ENV PORT 8989
+EXPOSE $PORT
+
+#prepare
+COPY gorm-custom-api /
+
+#main entry
+ENTRYPOINT [ "/gorm-custom-api" ]

@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+   name: api-config
+   data:
+        config.yml: |-
+          server:
+            idletimeout: 15s
+            readtimeout: 15s
+            writetimeout: 15s
+            addr: ":8989"

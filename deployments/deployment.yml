@@ -1,0 +1,36 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: gorm-custom-api
+  labels: {app: gorm-custom-api}
+spec:
+  replicas: 1
+  template:
+    metadata: {labels: {app: gorm-custom-api}}
+    spec:
+      containers:
+      - name: gorm-custom-api
+        image: bayugyug/gorm-custom-api:alpine
+        command:
+        ports:
+          - containerPort: 8989
+        volumeMounts:
+          - name: api-config
+            mountPath: /etc/api/
+            readOnly: true
+      volumes:
+        - name: api-config
+          configMap: { name: api-config }
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: gorm-custom-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: gorm-custom-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8989
