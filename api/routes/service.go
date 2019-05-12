@@ -152,6 +152,7 @@ func (svc *APIService) MapRoute() *chi.Mux {
 	router.Use(cors.Handler)
 
 	router.Get("/", svc.Building.Welcome)
+	router.Get("/health", svc.Building.HealthCheck)
 
 	/*
 		@end-points

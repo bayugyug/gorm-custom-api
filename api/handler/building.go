@@ -209,7 +209,7 @@ func (b *Building) HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 	info := struct {
 		Application string `json:"application"`
-		BuildTime   string `json:"buildTime"`
+		BuildTime   string `json:"build"`
 		Commit      string `json:"commit"`
 		Release     string `json:"release"`
 		Now         string `json:"now"`

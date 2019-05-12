@@ -155,6 +155,15 @@ curl -X DELETE    'http://127.0.0.1:8989/v1/api/building/3'
   "status": "success"
 }
 
+#check health of endpoint
+curl -X GET 'http://127.0.0.1:8989/v1/api/health'
+{
+  "application": "Building API Service",
+  "build": "20190512.141257",
+  "commit": "c77effb",
+  "release": "0.0.1",
+  "now": "2019-05-12T14:13:27+08:00"
+}
 
 ```
 
