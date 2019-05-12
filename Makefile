@@ -38,7 +38,7 @@ pack-scratch: clean build
 	cp bin/$(BUILD_NAME) deployments/ && cd deployments && sudo docker build --no-cache --rm -t bayugyug/gorm-custom-api:scratch  -f  Dockerfile.scratch .
 
 clean:
-	rm -f $(BUILD_NAME) bin/$(BUILD_NAME)
+	rm -f $(BUILD_NAME) bin/$(BUILD_NAME) deployments/$(BUILD_NAME)
 	rm -f benchmarks.xml coverage.xml vet.txt lint.txt testrun.txt gink.txt
 
 re: clean all
