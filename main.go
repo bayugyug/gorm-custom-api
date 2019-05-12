@@ -27,7 +27,7 @@ func main() {
 		log.Fatal("Oops! Config missing")
 	}
 	//init service
-	service, err := routes.NewAPIService(
+	service, err := routes.NewAPIRouter(
 		routes.WithSvcOptConfig(appcfg.Config),
 	)
 	if err != nil {

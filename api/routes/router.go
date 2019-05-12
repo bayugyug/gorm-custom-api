@@ -20,8 +20,8 @@ import (
 	"github.com/go-chi/render"
 )
 
-// APIService the svc map
-type APIService struct {
+// APIRouter the svc map
+type APIRouter struct {
 	Building *handler.Building
 	Mux      *chi.Mux
 	Address  string
@@ -29,34 +29,34 @@ type APIService struct {
 }
 
 // Setup options settings
-type Setup func(*APIService)
+type Setup func(*APIRouter)
 
 // WithSvcOptConfig opts for mux
 func WithSvcOptConfig(c *configs.ParameterConfig) Setup {
-	return func(args *APIService) {
+	return func(args *APIRouter) {
 		args.Config = c
 	}
 }
 
 // WithSvcOptMux opts for mux
 func WithSvcOptMux(m *chi.Mux) Setup {
-	return func(args *APIService) {
+	return func(args *APIRouter) {
 		args.Mux = m
 	}
 }
 
 // WithSvcOptHandler opts for handler
 func WithSvcOptHandler(r *handler.Building) Setup {
-	return func(args *APIService) {
+	return func(args *APIRouter) {
 		args.Building = r
 	}
 }
 
-// NewAPIService service new instance
-func NewAPIService(opts ...Setup) (*APIService, error) {
+// NewAPIRouter service new instance
+func NewAPIRouter(opts ...Setup) (*APIRouter, error) {
 
 	//default
-	svc := &APIService{
+	svc := &APIRouter{
 		Address: ":8989",
 	}
 
@@ -88,7 +88,7 @@ func NewAPIService(opts ...Setup) (*APIService, error) {
 }
 
 // Run the http server based on settings
-func (svc *APIService) Run() {
+func (svc *APIRouter) Run() {
 
 	//gracious timing
 	srv := &http.Server{
@@ -122,7 +122,7 @@ func (svc *APIService) Run() {
 }
 
 // MapRoute route map all endpoints
-func (svc *APIService) MapRoute() *chi.Mux {
+func (svc *APIRouter) MapRoute() *chi.Mux {
 
 	// Multiplexer
 	router := chi.NewRouter()

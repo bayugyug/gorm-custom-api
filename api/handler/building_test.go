@@ -14,45 +14,40 @@ import (
 	"github.com/bayugyug/gorm-custom-api/api/routes"
 	"github.com/bayugyug/gorm-custom-api/tools"
 
-
 	"github.com/go-chi/chi"
 	"github.com/icrowley/fake"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-
-var service *routes.APIService
-
+var svcrouter *routes.APIRouter
 
 var _ = BeforeSuite(func() {
 	var err error
-   	//init
-	service, err = routes.NewAPIService(
+	//init
+	svcrouter, err = routes.NewAPIRouter(
 		routes.WithSvcOptConfig(tools.Helper{}.ConfigTst()),
 	)
-    Expect(err).NotTo(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 
 })
 
 var _ = AfterSuite(func() {
-	tools.Helper{}.EmptyDBTst(service.Building.Storage)
+	tools.Helper{}.EmptyDBTst(svcrouter.Building.Storage)
 })
 
-
 var _ = Describe("REST Building API Service::HANDLERS", func() {
-
 
 	var formdata string
 	var router *chi.Mux
 
 	BeforeEach(func() {
 		router = chi.NewRouter()
-		router.Post("/v1/api/building", service.Building.Create)
-		router.Put("/v1/api/building", service.Building.Update)
-		router.Get("/v1/api/building", service.Building.GetAll)
-		router.Get("/v1/api/building/{id}", service.Building.GetOne)
-		router.Delete("/v1/api/building/{id}", service.Building.Delete)
+		router.Post("/v1/api/building", svcrouter.Building.Create)
+		router.Put("/v1/api/building", svcrouter.Building.Update)
+		router.Get("/v1/api/building", svcrouter.Building.GetAll)
+		router.Get("/v1/api/building/{id}", svcrouter.Building.GetOne)
+		router.Delete("/v1/api/building/{id}", svcrouter.Building.Delete)
 	})
 
 	Context("Valid parameters", func() {
@@ -85,7 +80,7 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 				Expect(w.Code).To(Equal(http.StatusCreated))
 				Expect(response.Status).To(Equal("success"))
 				By("Add before update data ok")
-				
+
 				//update it
 				pid, _ := response.Result.(float64)
 				formdata = tools.Seeder{}.Update(int64(pid), buildingName)
@@ -145,8 +140,8 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 				By("Add record before get 1 data ok")
 
 				pid, _ := response.Result.(float64)
-				w2, body2 := testReq(router, "GET", 
-					fmt.Sprintf("/v1/api/building/%d",int64(pid)),
+				w2, body2 := testReq(router, "GET",
+					fmt.Sprintf("/v1/api/building/%d", int64(pid)),
 					nil)
 				var response2 handler.Response
 				if err := json.Unmarshal(body2, &response2); err != nil {
@@ -173,8 +168,8 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 
 				pid, _ := response.Result.(float64)
 				w2, body2 := testReq(router, "DELETE",
-							fmt.Sprintf("/v1/api/building/%d",int64(pid)),
-							nil)
+					fmt.Sprintf("/v1/api/building/%d", int64(pid)),
+					nil)
 				var response2 handler.Response
 				if err := json.Unmarshal(body2, &response2); err != nil {
 					Fail(err.Error())
@@ -257,8 +252,8 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 		Context("Get 1 record with missing ID", func() {
 			It("should not return data", func() {
 				w, body := testReq(router, "GET",
-				fmt.Sprintf( "/v1/api/building/999%d", int64(rand.Intn(9999999999))),
-				nil)
+					fmt.Sprintf("/v1/api/building/999%d", int64(rand.Intn(9999999999))),
+					nil)
 				var response handler.Response
 				if err := json.Unmarshal(body, &response); err != nil {
 					Fail(err.Error())
@@ -283,8 +278,8 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 				//update it
 				pid, _ := response.Result.(float64)
 				formdata = tools.Seeder{}.Update(
-							int64(pid) + int64(rand.Intn(9999)), 
-							buildingName)
+					int64(pid)+int64(rand.Intn(9999)),
+					buildingName)
 				w2, body2 := testReq(router, "PUT", "/v1/api/building",
 					bytes.NewReader([]byte(formdata)))
 				var response2 handler.Response
@@ -361,8 +356,8 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 				By("Add before remove data ok")
 
 				w2, body2 := testReq(router, "DELETE",
-					fmt.Sprintf( "/v1/api/building/999%d999", int64(rand.Intn(9999999999))),
-				  nil)
+					fmt.Sprintf("/v1/api/building/999%d999", int64(rand.Intn(9999999999))),
+					nil)
 				var response2 handler.Response
 				if err := json.Unmarshal(body2, &response2); err != nil {
 					Fail(err.Error())

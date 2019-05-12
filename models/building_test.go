@@ -14,13 +14,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var service *routes.APIService
+var svcrouter *routes.APIRouter
 var store *gorm.DB
 
 var _ = BeforeSuite(func() {
 	var err error
 	//init
-	service, err = routes.NewAPIService(
+	svcrouter, err = routes.NewAPIRouter(
 		routes.WithSvcOptConfig(tools.Helper{}.ConfigTst()),
 	)
 	Expect(err).NotTo(HaveOccurred())
@@ -28,13 +28,13 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	tools.Helper{}.EmptyDBTst(service.Building.Storage)
+	tools.Helper{}.EmptyDBTst(svcrouter.Building.Storage)
 })
 
 var _ = Describe("REST Building API Service::MODELS", func() {
 
 	BeforeEach(func() {
-		store = service.Building.Storage
+		store = svcrouter.Building.Storage
 	})
 
 	Context("Valid parameters", func() {
