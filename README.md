@@ -7,11 +7,17 @@
 
 
 ### Dependencies
-- Dependencies manager: GO111MODULE=on go mod init
-- Testing framework: ginkgo - https://github.com/onsi/ginkgo
-- DB Migration: goose - https://github.com/pressly/goose/cmd/goose
+
+- Dependencies manager: 
+  - GO111MODULE=on go mod init
+
+- Testing framework: 
+  - ginkgo - https://github.com/onsi/ginkgo
+
+- DB Migration:
+  - goose - https://github.com/pressly/goose/cmd/goose
 	- goose -dir=db/migration mysql "root:@tcp(127.0.0.1:3306)/gorm_cust_api?parseTime=true&loc=Local&charset=utf8" status
-	- goose -dir=db/migration mysql "root:@tcp(127.0.0.1:3306)/gorm_cust_api_test?parseTime=true&loc=Local&charset=utf8" status
+  - goose -dir=db/migration mysql "root:@tcp(127.0.0.1:3306)/gorm_cust_api_test?parseTime=true&loc=Local&charset=utf8" status
 
 ### Prerequisite
 - Create sample database and its necessary privileges
@@ -167,6 +173,7 @@ curl -X DELETE    'http://127.0.0.1:8989/v1/api/building/3'
 ```sh
 
 ./bin/gorm-custom-api --config '{"port":"8989","dsn":"root:@tcp(127.0.0.1:3306)/gorm_cust_api"}'
+
 
 ```
 
