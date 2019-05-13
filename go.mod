@@ -3,7 +3,6 @@ module github.com/bayugyug/gorm-custom-api
 go 1.12
 
 require (
-	github.com/bayugyug/building-custom-api v0.0.0-20190511044051-a18ff84ae43f
 	github.com/corpix/uarand v0.1.0 // indirect
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0

@@ -26,14 +26,14 @@ var _ = BeforeSuite(func() {
 	var err error
 	//init
 	svcrouter, err = routes.NewAPIRouter(
-		routes.WithSvcOptConfig(tools.Helper{}.ConfigTst()),
+		routes.WithSvcOptConfig(tools.DevelTester{}.Config()),
 	)
 	Expect(err).NotTo(HaveOccurred())
 
 })
 
 var _ = AfterSuite(func() {
-	tools.Helper{}.EmptyDBTst(svcrouter.Building.Storage)
+	tools.DevelTester{}.Empty(svcrouter.Building.Storage)
 })
 
 var _ = Describe("REST Building API Service::HANDLERS", func() {

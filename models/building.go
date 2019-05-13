@@ -4,8 +4,6 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -78,10 +76,10 @@ func NewBuildingGetOne(id int64) *BuildingGetParams {
 }
 
 // Get query from the db base on id
-func (p *BuildingGetParams) Get(gDB *gorm.DB) (*Building, error) {
+func (p *BuildingGetParams) Get(dbh *gorm.DB) (*Building, error) {
 	// Get 1 record by id
 	var building Building
-	gDB.Preload("BuildingFloors").Find(&building, p.ID)
+	dbh.Preload("BuildingFloors").Find(&building, p.ID)
 	if building.ID <= 0 {
 		//not found
 		return nil, ErrRecordMismatch
@@ -91,10 +89,10 @@ func (p *BuildingGetParams) Get(gDB *gorm.DB) (*Building, error) {
 }
 
 // GetAll query all from the db
-func (p *BuildingGetParams) GetAll(gDB *gorm.DB) ([]Building, error) {
+func (p *BuildingGetParams) GetAll(dbh *gorm.DB) ([]Building, error) {
 	// Get all records
 	var buildings []Building
-	gDB.
+	dbh.
 		Preload("BuildingFloors").
 		Find(&buildings)
 
@@ -120,35 +118,12 @@ func NewBuildingCreate() *BuildingCreateParams {
 	return &BuildingCreateParams{}
 }
 
-// Bind filter parameter
-func (p *BuildingCreateParams) Bind(r *http.Request) error {
-	//sanity check
-	if p == nil {
-		return ErrMissingRequiredParameters
-	}
-	p.Address = strings.TrimSpace(p.Address)
-	//check
-	return p.SanityCheck()
-}
-
-// SanityCheck filter required parameter
-func (p *BuildingCreateParams) SanityCheck() error {
-	if p.Name == nil || *p.Name == "" {
-		return ErrMissingRequiredParameters
-	}
-	return nil
-}
-
 // Create add a row from the store
-func (p *BuildingCreateParams) Create(gDB *gorm.DB) (int64, error) {
-	//should not happen
-	if err := p.SanityCheck(); err != nil {
-		return 0, err
-	}
+func (p *BuildingCreateParams) Create(dbh *gorm.DB) (int64, error) {
 
 	// Get 1 record by name
 	var building Building
-	gDB.
+	dbh.
 		Preload("BuildingFloors").
 		Find(&building,
 			"name = ?",
@@ -172,7 +147,7 @@ func (p *BuildingCreateParams) Create(gDB *gorm.DB) (int64, error) {
 		Address:        p.Address,
 		BuildingFloors: floors,
 	}
-	if err := gDB.Create(&bdata).Error; err != nil || bdata.ID <= 0 {
+	if err := dbh.Create(&bdata).Error; err != nil || bdata.ID <= 0 {
 		//not found
 		return 0, ErrDBTransaction
 	}
@@ -193,37 +168,12 @@ func NewBuildingUpdate() *BuildingUpdateParams {
 	return &BuildingUpdateParams{}
 }
 
-// Bind filter parameter
-func (p *BuildingUpdateParams) Bind(r *http.Request) error {
-	//sanity check
-	if p == nil {
-		return ErrMissingRequiredParameters
-	}
-	//fmt
-	p.Address = strings.TrimSpace(p.Address)
-	//chk
-	return p.SanityCheck()
-}
-
-// SanityCheck filter required parameter
-func (p *BuildingUpdateParams) SanityCheck() error {
-	if p.ID == nil || p.Name == nil ||
-		*p.ID == 0 || *p.Name == "" {
-		return ErrMissingRequiredParameters
-	}
-	return nil
-}
-
 // Update a row from the store
-func (p *BuildingUpdateParams) Update(gDB *gorm.DB) error {
-	//should not happen :-)
-	if err := p.SanityCheck(); err != nil {
-		return err
-	}
+func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 
 	//1 record by id
 	var building Building
-	gDB.
+	dbh.
 		Set("gorm:query_option", "FOR UPDATE").
 		Preload("BuildingFloors").
 		Find(&building, *p.ID)
@@ -233,7 +183,7 @@ func (p *BuildingUpdateParams) Update(gDB *gorm.DB) error {
 		return ErrRecordNotFound
 	}
 	//set building
-	gDB.
+	dbh.
 		Model(&building).
 		Updates(
 			Building{
@@ -242,7 +192,7 @@ func (p *BuildingUpdateParams) Update(gDB *gorm.DB) error {
 			})
 
 	//remove the old floors
-	gDB.
+	dbh.
 		Delete(
 			BuildingFloor{},
 			"building_id = ?",
@@ -254,7 +204,7 @@ func (p *BuildingUpdateParams) Update(gDB *gorm.DB) error {
 			BuildingID: building.ID,
 			Floor:      floor,
 		}
-		gDB.
+		dbh.
 			Create(&fdata)
 	}
 	return nil
@@ -273,10 +223,10 @@ func NewBuildingDelete(pid int64) *BuildingDeleteParams {
 }
 
 // Delete remove a row from the store base on id
-func (p *BuildingDeleteParams) Delete(gDB *gorm.DB) error {
+func (p *BuildingDeleteParams) Delete(dbh *gorm.DB) error {
 	// Get 1 record by id
 	var building Building
-	gDB.
+	dbh.
 		Preload("BuildingFloors").
 		Find(&building, p.ID)
 	if building.ID <= 0 {
@@ -285,7 +235,7 @@ func (p *BuildingDeleteParams) Delete(gDB *gorm.DB) error {
 	}
 
 	//building
-	gDB.
+	dbh.
 		Delete(&building)
 	return nil
 }

@@ -21,14 +21,14 @@ var _ = BeforeSuite(func() {
 	var err error
 	//init
 	svcrouter, err = routes.NewAPIRouter(
-		routes.WithSvcOptConfig(tools.Helper{}.ConfigTst()),
+		routes.WithSvcOptConfig(tools.DevelTester{}.Config()),
 	)
 	Expect(err).NotTo(HaveOccurred())
 
 })
 
 var _ = AfterSuite(func() {
-	tools.Helper{}.EmptyDBTst(svcrouter.Building.Storage)
+	tools.DevelTester{}.Empty(svcrouter.Building.Storage)
 })
 
 var _ = Describe("REST Building API Service::MODELS", func() {
@@ -184,18 +184,6 @@ var _ = Describe("REST Building API Service::MODELS", func() {
 	}) // valid
 
 	Context("Invalid parameters", func() {
-
-		Context("Create record with missing parameter", func() {
-			It("should error", func() {
-				params := &models.BuildingCreateParams{
-					Address: fmt.Sprintf("Marina Boulevard::%s", fake.DigitsN(15)),
-					Floors:  tools.Seeder{}.CreateFloors(),
-				}
-				_, err := params.Create(store)
-				Expect(err).To(HaveOccurred())
-				By("Create data empty as expected")
-			})
-		})
 
 		Context("Update record with missing parameter id", func() {
 			It("should error", func() {

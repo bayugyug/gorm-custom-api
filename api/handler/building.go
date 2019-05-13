@@ -43,6 +43,89 @@ func NewBuilding(conn *gorm.DB) *Building {
 	}
 }
 
+// BuildingFormCreateParams create parameter
+type BuildingFormCreateParams struct {
+	Name    *string  `json:"name"`
+	Address string   `json:"address"`
+	Floors  []string `json:"floors"`
+}
+
+// NewBuildingFormCreateParams new creator
+func NewBuildingFormCreateParams() *BuildingFormCreateParams {
+	return &BuildingFormCreateParams{}
+}
+
+// Bind filter parameter
+func (p *BuildingFormCreateParams) Bind(r *http.Request) error {
+	//sanity check
+	if p == nil {
+		return models.ErrMissingRequiredParameters
+	}
+	p.Address = strings.TrimSpace(p.Address)
+	//check
+	return p.SanityCheck()
+}
+
+// SanityCheck filter required parameter
+func (p *BuildingFormCreateParams) SanityCheck() error {
+	if p.Name == nil || *p.Name == "" {
+		return models.ErrMissingRequiredParameters
+	}
+	return nil
+}
+
+// BuildingFormUpdateParams update parameter
+type BuildingFormUpdateParams struct {
+	ID *int64 `json:"id"`
+	BuildingFormCreateParams
+}
+
+// NewBuildingFormUpdateParams new instance
+func NewBuildingFormUpdateParams() *BuildingFormUpdateParams {
+	return &BuildingFormUpdateParams{}
+}
+
+// Bind filter parameter
+func (p *BuildingFormUpdateParams) Bind(r *http.Request) error {
+	//sanity check
+	if p == nil {
+		return models.ErrMissingRequiredParameters
+	}
+	//fmt
+	p.Address = strings.TrimSpace(p.Address)
+	//chk
+	return p.SanityCheck()
+}
+
+// SanityCheck filter required parameter
+func (p *BuildingFormUpdateParams) SanityCheck() error {
+	if p.ID == nil || p.Name == nil ||
+		*p.ID == 0 || *p.Name == "" {
+		return models.ErrMissingRequiredParameters
+	}
+	return nil
+}
+
+// BuildingFormGetParams get parameter
+type BuildingFormGetParams struct {
+	ID int64 `json:"id"`
+}
+
+// NewBuildingFormGetParams new instance with parameter
+func NewBuildingFormGetParams(id int64) *BuildingFormGetParams {
+	return &BuildingFormGetParams{ID: id}
+}
+
+// BuildingFormDeleteParams delete parameter
+type BuildingFormDeleteParams struct {
+	ID int64 `json:"id"`
+}
+
+// NewBuildingFormDeleteParams new instance
+func NewBuildingFormDeleteParams(pid int64) *BuildingFormDeleteParams {
+	return &BuildingFormDeleteParams{ID: pid}
+}
+
 // Welcome index page
 func (b *Building) Welcome(w http.ResponseWriter, r *http.Request) {
 	//good
@@ -53,14 +136,20 @@ func (b *Building) Welcome(w http.ResponseWriter, r *http.Request) {
 
 // Create save a row in store
 func (b *Building) Create(w http.ResponseWriter, r *http.Request) {
-	data := models.NewBuildingCreate()
+	fdata := NewBuildingFormCreateParams()
 	//sanity check
-	if err := render.Bind(r, data); err != nil {
-		log.Println("CREATE", data, err)
+	if err := render.Bind(r, fdata); err != nil {
+		log.Println("CREATE", fdata, err)
 		//400
 		b.ReplyErrContent(w, r, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
+
+	data := models.NewBuildingCreate()
+	data.Name = fdata.Name
+	data.Address = fdata.Address
+	data.Floors = fdata.Floors
+
 	pid, err := data.Create(b.Storage)
 	//chk
 	if err != nil {
@@ -88,14 +177,19 @@ func (b *Building) Create(w http.ResponseWriter, r *http.Request) {
 
 // Update update row in store
 func (b *Building) Update(w http.ResponseWriter, r *http.Request) {
-	data := models.NewBuildingUpdate()
+	fdata := NewBuildingFormUpdateParams()
 	//sanity check
-	if err := render.Bind(r, data); err != nil {
-		log.Println("UPDATE", data, err)
+	if err := render.Bind(r, fdata); err != nil {
+		log.Println("UPDATE", fdata, err)
 		//400
 		b.ReplyErrContent(w, r, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
+	data := models.NewBuildingUpdate()
+	data.ID = fdata.ID
+	data.Name = fdata.Name
+	data.Address = fdata.Address
+	data.Floors = fdata.Floors
 	//check
 	if err := data.Update(b.Storage); err != nil {
 		log.Println("UPDATE", err)
@@ -144,14 +238,15 @@ func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 // GetOne get 1 row per id
 func (b *Building) GetOne(w http.ResponseWriter, r *http.Request) {
 	s, _ := strconv.ParseInt(strings.TrimSpace(chi.URLParam(r, "id")), 10, 64)
-	data := models.NewBuildingGetOne(s)
-	//chk
-	if data.ID == 0 {
+	fdata := NewBuildingFormGetParams(s)
+	if fdata.ID == 0 {
 		//400
 		b.ReplyErrContent(w, r, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
+
 	//check
+	data := models.NewBuildingGetOne(fdata.ID)
 	row, err := data.Get(b.Storage)
 	//chk
 	if err != nil {

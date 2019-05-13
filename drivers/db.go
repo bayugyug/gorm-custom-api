@@ -29,7 +29,6 @@ var (
 
 // DBHandle the db main object
 type DBHandle struct {
-	Connection  []*gorm.DB
 	Namespace   string
 	Type        string
 	connections []*gorm.DB
@@ -42,6 +41,7 @@ func NewDBHandle(name, dbtype, conn string) *DBHandle {
 		Namespace: name,
 		Type:      dbtype,
 	}
+	//connect to server
 	handle.PrepareDB(dbtype, conn)
 	return handle
 }
@@ -61,14 +61,19 @@ func (dh *DBHandle) PrepareDB(dbtype, conn string) *DBHandle {
 	optss := strings.Join(opts, "&")
 	log.Println(optss)
 
-	for i := 1; i <= 3; i++ {
+	for i := 1; i <= 5; i++ {
 		dbh, err := gorm.Open("mysql", fmt.Sprintf("%s?%s", conn, optss))
 		if err != nil {
-			log.Println(err, conn)
+			log.Println("DB::OPEN", err, conn)
 			time.Sleep(time.Millisecond * 1000)
 			continue
 		}
-
+		err = dbh.DB().Ping()
+		if err != nil {
+			log.Println("DB::PING", err, conn)
+			time.Sleep(time.Millisecond * 1000)
+			continue
+		}
 		// most important tweak is here :-)
 		// https://www.alexedwards.net/blog/configuring-sqldb
 
@@ -115,4 +120,23 @@ func (dh *DBHandle) GetConnection() *gorm.DB {
 		return nil
 	}
 	return dh.connections[p]
+}
+
+// TransactionFn is a function that will be called with sync attrs
+type TransactionFn func(*gorm.DB) error
+
+// SyncRunTx creates a new transaction and handles rollback/commit based on the
+func (dh *DBHandle) SyncRunTx(db *gorm.DB, callback TransactionFn) error {
+	//get sync tx
+	tx := db.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	//exec
+	if err := callback(tx); err != nil {
+		// something went wrong, rollback
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
