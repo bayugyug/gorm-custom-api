@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/bayugyug/gorm-custom-api/configs"
-	"github.com/bayugyug/gorm-custom-api/models"
 	"github.com/jinzhu/gorm"
 )
 
@@ -22,14 +21,13 @@ func (h DevelTester) Config() *configs.ParameterConfig {
 	return cfg.FormatParameterConfig(s)
 }
 
-// Empty free the test db
-func (h DevelTester) Empty(storage *gorm.DB) {
-	// Select all records from a model and delete all
-	storage.Model(&models.Building{}).Delete(&models.Building{})
-}
-
 // EmptyDBTst free the test db
-func (h Helper) EmptyDBTst(storage *gorm.DB) {
+func (h DevelTester) EmptyDBTst(storage *gorm.DB) {
 	// Select all records from a model and delete all
-	storage.Model(&models.Building{}).Delete(&models.Building{})
+	// storage.Model(&models.Building{}).Delete(&models.Building{})
+	storage.Exec(`
+	SET FOREIGN_KEY_CHECKS = 0; 
+	TRUNCATE table buildings; 
+	SET FOREIGN_KEY_CHECKS = 1;
+	`)
 }

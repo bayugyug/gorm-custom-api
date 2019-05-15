@@ -33,7 +33,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	tools.DevelTester{}.Empty(svcrouter.Building.Storage)
+	tools.DevelTester{}.EmptyDBTst(svcrouter.Building.Storage)
 })
 
 var _ = Describe("REST Building API Service::HANDLERS", func() {

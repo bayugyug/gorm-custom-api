@@ -127,16 +127,30 @@ type TransactionFn func(*gorm.DB) error
 
 // SyncRunTx creates a new transaction and handles rollback/commit based on the
 func (dh *DBHandle) SyncRunTx(db *gorm.DB, callback TransactionFn) error {
+	var err error
 	//get sync tx
 	tx := db.Begin()
-	if tx.Error != nil {
-		return tx.Error
-	}
-	//exec
-	if err := callback(tx); err != nil {
-		// something went wrong, rollback
-		tx.Rollback()
+	err = tx.Error
+
+	//chk
+	if err != nil {
 		return err
 	}
-	return tx.Commit().Error
+
+	defer func() {
+		if panicRecord := recover(); panicRecord != nil || err != nil {
+			// something went wrong, rollback
+			tx.Rollback()
+			log.Println("SyncRunTx::Rollback", panicRecord, err)
+		} else {
+			// all good, commit
+			if terr := tx.Commit().Error; terr != nil {
+				log.Println("SyncRunTx::Commit", terr)
+			}
+		}
+	}()
+
+	//exec
+	err = callback(tx)
+	return err
 }

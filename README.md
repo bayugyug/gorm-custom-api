@@ -12,10 +12,11 @@
   - GO111MODULE=on go mod init
 
 - Testing framework: 
-  - ginkgo - https://github.com/onsi/ginkgo
+  - $ go get github.com/onsi/ginkgo/ginkgo
+  - $ go get github.com/onsi/gomega/... 
 
 - DB Migration:
-  - goose - https://github.com/pressly/goose/cmd/goose
+  - $ go get -u github.com/pressly/goose/cmd/goose
 
 
 
