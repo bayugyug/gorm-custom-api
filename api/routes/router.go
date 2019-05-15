@@ -26,6 +26,7 @@ type APIRouter struct {
 	Mux      *chi.Mux
 	Address  string
 	Config   *configs.ParameterConfig
+	DBHandle *drivers.DBHandle
 }
 
 // Setup options settings
@@ -69,12 +70,12 @@ func NewAPIRouter(opts ...Setup) (*APIRouter, error) {
 		svc.Address = ":" + svc.Config.Port
 	}
 
-	dbh := drivers.NewDBHandle(
+	svc.DBHandle = drivers.NewDBHandle(
 		"building-api-db-driver",
 		"mysql",
 		svc.Config.DSN)
 
-	db := dbh.GetConnection()
+	db := svc.DBHandle.GetConnection()
 	if db == nil {
 		return svc, fmt.Errorf("DB Connect failed")
 	}

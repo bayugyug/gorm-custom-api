@@ -4,7 +4,10 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"log"
 	"time"
+
+	"github.com/bayugyug/gorm-custom-api/drivers"
 
 	"github.com/jinzhu/gorm"
 )
@@ -120,9 +123,11 @@ func NewBuildingCreate() *BuildingCreateParams {
 
 // Create add a row from the store
 func (p *BuildingCreateParams) Create(dbh *gorm.DB) (int64, error) {
+	var err error
 
 	// Get 1 record by name
 	var building Building
+	//exists
 	dbh.
 		Preload("BuildingFloors").
 		Find(&building,
@@ -147,11 +152,17 @@ func (p *BuildingCreateParams) Create(dbh *gorm.DB) (int64, error) {
 		Address:        p.Address,
 		BuildingFloors: floors,
 	}
-	if err := dbh.Create(&bdata).Error; err != nil || bdata.ID <= 0 {
+
+	//sync run
+	err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
+		return transaction.Create(&bdata).Error
+	})
+
+	if err != nil || bdata.ID <= 0 {
+		log.Println("Failed::Create", err)
 		//not found
 		return 0, ErrDBTransaction
 	}
-
 	return bdata.ID, nil
 }
 
@@ -170,7 +181,7 @@ func NewBuildingUpdate() *BuildingUpdateParams {
 
 // Update a row from the store
 func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
-
+	var err error
 	//1 record by id
 	var building Building
 	dbh.
@@ -178,25 +189,44 @@ func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 		Preload("BuildingFloors").
 		Find(&building, *p.ID)
 
+	//not found
 	if building.ID <= 0 {
-		//not found
 		return ErrRecordNotFound
 	}
-	//set building
-	dbh.
-		Model(&building).
-		Updates(
-			Building{
-				Name:    *p.Name,
-				Address: p.Address,
-			})
 
-	//remove the old floors
-	dbh.
-		Delete(
-			BuildingFloor{},
-			"building_id = ?",
-			building.ID)
+	//sync run
+	err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
+		var terr error
+		terr = transaction.
+			Model(&building).
+			Updates(
+				Building{
+					Name:    *p.Name,
+					Address: p.Address,
+				}).Error
+
+		if terr != nil {
+			return terr
+		}
+
+		//remove the old floors
+		terr = transaction.
+			Delete(
+				BuildingFloor{},
+				"building_id = ?",
+				building.ID).Error
+
+		if terr != nil {
+			//not found
+			return ErrDBTransaction
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Println("Failed::Update", err)
+		return ErrDBTransaction
+	}
 
 	//set all floors
 	for _, floor := range p.Floors {
@@ -204,8 +234,15 @@ func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 			BuildingID: building.ID,
 			Floor:      floor,
 		}
-		dbh.
-			Create(&fdata)
+
+		err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
+			return transaction.Create(&fdata).Error
+		})
+
+		if err != nil {
+			log.Println("Failed::Update", err)
+			return ErrDBTransaction
+		}
 	}
 	return nil
 }
@@ -224,18 +261,28 @@ func NewBuildingDelete(pid int64) *BuildingDeleteParams {
 
 // Delete remove a row from the store base on id
 func (p *BuildingDeleteParams) Delete(dbh *gorm.DB) error {
+	var err error
 	// Get 1 record by id
 	var building Building
 	dbh.
 		Preload("BuildingFloors").
 		Find(&building, p.ID)
+
+	//not found
 	if building.ID <= 0 {
-		//not found
 		return ErrRecordNotFound
 	}
 
 	//building
-	dbh.
-		Delete(&building)
+	err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
+		return transaction.
+			Delete(&building).
+			Error
+	})
+
+	if err != nil {
+		log.Println("Failed::Update", err)
+		return ErrDBTransaction
+	}
 	return nil
 }

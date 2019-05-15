@@ -126,7 +126,7 @@ func (dh *DBHandle) GetConnection() *gorm.DB {
 type TransactionFn func(*gorm.DB) error
 
 // SyncRunTx creates a new transaction and handles rollback/commit based on the
-func (dh *DBHandle) SyncRunTx(db *gorm.DB, callback TransactionFn) error {
+func SyncRunTx(db *gorm.DB, callback TransactionFn) error {
 	var err error
 	//get sync tx
 	tx := db.Begin()
