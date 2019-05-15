@@ -23,15 +23,15 @@
 ### Prerequisite
 - Create sample database and its necessary privileges
 
-	- development
-    - create user gorm_cust_api;
-    - create database if not exists gorm_cust_api;
-    - goose -dir=db/migration mysql "root:@tcp(127.0.0.1:3306)/gorm_cust_api?parseTime=true&loc=Local&charset=utf8" status
+	- Development/Production
+      - create user gorm_cust_api;
+      - create database if not exists gorm_cust_api;
+      - goose -dir=db/migration mysql "user:xxxx@tcp(127.0.0.1:3306)/gorm_cust_api?parseTime=true&loc=Local&charset=utf8" status
 
-	- testing
-    - create user gorm_cust_api;
-    - create database if not exists gorm_cust_api_test;
-    - goose -dir=db/migration mysql "root:@tcp(127.0.0.1:3306)/gorm_cust_api_test?parseTime=true&loc=Local&charset=utf8" status
+	- Testing
+      - create user gorm_cust_api;
+      - create database if not exists gorm_cust_api_test;
+      - goose -dir=db/migration mysql "user:xxxx@tcp(127.0.0.1:3306)/gorm_cust_api_test?parseTime=true&loc=Local&charset=utf8" status
 
 ### Compile
 
