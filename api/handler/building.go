@@ -9,6 +9,7 @@ import (
 
 	"github.com/bayugyug/gorm-custom-api/configs"
 	"github.com/bayugyug/gorm-custom-api/models"
+	"github.com/bayugyug/gorm-custom-api/services"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
@@ -61,13 +62,13 @@ func (b *Building) Create(w http.ResponseWriter, r *http.Request) {
 		b.ReplyErrContent(w, r, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
-
-	data := models.NewBuildingCreate()
-	data.Name = fdata.Name
-	data.Address = fdata.Address
-	data.Floors = fdata.Floors
-
-	pid, err := data.Create(b.Storage)
+	svc := services.NewBuildingService()
+	pid, err := svc.Create(b.Storage,
+		&services.BuildingCreateParams{
+			Name:    fdata.Name,
+			Address: fdata.Address,
+			Floors:  fdata.Floors,
+		})
 	//chk
 	if err != nil {
 		log.Println("CREATE", err)
@@ -102,13 +103,15 @@ func (b *Building) Update(w http.ResponseWriter, r *http.Request) {
 		b.ReplyErrContent(w, r, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
-	data := models.NewBuildingUpdate()
+	svc := services.NewBuildingService()
+	data := services.NewBuildingUpdate()
 	data.ID = fdata.ID
 	data.Name = fdata.Name
 	data.Address = fdata.Address
 	data.Floors = fdata.Floors
+
 	//check
-	if err := data.Update(b.Storage); err != nil {
+	if err := svc.Update(b.Storage, data); err != nil {
 		log.Println("UPDATE", err)
 		switch err {
 		case models.ErrRecordMismatch:
@@ -134,9 +137,9 @@ func (b *Building) Update(w http.ResponseWriter, r *http.Request) {
 
 // GetAll list all
 func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
-	data := &models.BuildingGetParams{}
+	svc := services.NewBuildingService()
 	//check
-	rows, err := data.GetAll(b.Storage)
+	rows, err := svc.GetAll(b.Storage)
 	//chk
 	if err != nil {
 		log.Println("GETALL", err)
@@ -163,8 +166,8 @@ func (b *Building) GetOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//check
-	data := models.NewBuildingGetOne(fdata.ID)
-	row, err := data.Get(b.Storage)
+	svc := services.NewBuildingService()
+	row, err := svc.Get(b.Storage, services.NewBuildingGetOne(fdata.ID))
 	//chk
 	if err != nil {
 		log.Println("GET1", err)
@@ -181,8 +184,9 @@ func (b *Building) GetOne(w http.ResponseWriter, r *http.Request) {
 
 // Delete remove from store
 func (b *Building) Delete(w http.ResponseWriter, r *http.Request) {
+	svc := services.NewBuildingService()
 	s, _ := strconv.ParseInt(strings.TrimSpace(chi.URLParam(r, "id")), 10, 64)
-	data := models.NewBuildingDelete(s)
+	data := services.NewBuildingDelete(s)
 	//chk
 	if data.ID == 0 {
 		//400
@@ -190,7 +194,7 @@ func (b *Building) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//chk
-	if err := data.Delete(b.Storage); err != nil {
+	if err := svc.Delete(b.Storage, data); err != nil {
 		log.Println("DELETE", err)
 		switch err {
 		case models.ErrRecordNotFound:

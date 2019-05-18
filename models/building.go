@@ -27,6 +27,15 @@ var (
 	ErrDBTransaction = errors.New("db storage failed")
 )
 
+//BuildingCreator list of all building funcs
+type BuildingCreator interface {
+	Get(dbh *gorm.DB) (*Building, error)
+	GetAll(dbh *gorm.DB) ([]Building, error)
+	Create(dbh *gorm.DB) (int64, error)
+	Update(dbh *gorm.DB) error
+	Delete(dbh *gorm.DB) error
+}
+
 // Building table buildings
 type Building struct {
 	ID             int64           `gorm:"primary_key" json:"id,omitempty"`
@@ -62,29 +71,17 @@ func NewBuildingData() *Building {
 }
 
 // HashKey convert to md5 hash
-func (q Building) HashKey(s string) string {
+func (q *Building) HashKey(s string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
 }
 
-// GET
-
-// BuildingGetParams get parameter
-type BuildingGetParams struct {
-	ID int64 `json:"id"`
-}
-
-// NewBuildingGetOne new instance with parameter
-func NewBuildingGetOne(id int64) *BuildingGetParams {
-	return &BuildingGetParams{ID: id}
-}
-
 // Get query from the db base on id
-func (p *BuildingGetParams) Get(dbh *gorm.DB) (*Building, error) {
+func (q *Building) Get(dbh *gorm.DB) (*Building, error) {
 	// Get 1 record by id
 	var building Building
 	dbh.
 		Preload("BuildingFloors").
-		Find(&building, p.ID)
+		Find(&building, q.ID)
 	if building.ID <= 0 {
 		//not found
 		return nil, ErrRecordMismatch
@@ -94,7 +91,7 @@ func (p *BuildingGetParams) Get(dbh *gorm.DB) (*Building, error) {
 }
 
 // GetAll query all from the db
-func (p *BuildingGetParams) GetAll(dbh *gorm.DB) ([]Building, error) {
+func (q *Building) GetAll(dbh *gorm.DB) ([]Building, error) {
 	// Get all records
 	var buildings []Building
 	dbh.
@@ -109,87 +106,43 @@ func (p *BuildingGetParams) GetAll(dbh *gorm.DB) ([]Building, error) {
 	return buildings, nil
 }
 
-// CREATE
-
-// BuildingCreateParams create parameter
-type BuildingCreateParams struct {
-	Name    *string  `json:"name"`
-	Address string   `json:"address"`
-	Floors  []string `json:"floors"`
-}
-
-// NewBuildingCreate new creator
-func NewBuildingCreate() *BuildingCreateParams {
-	return &BuildingCreateParams{}
-}
-
 // Create add a row from the store
-func (p *BuildingCreateParams) Create(dbh *gorm.DB) (int64, error) {
-	var err error
-
+func (q *Building) Create(dbh *gorm.DB) (int64, error) {
 	// Get 1 record by name
+	var err error
 	var building Building
 	//exists
 	dbh.
 		Preload("BuildingFloors").
 		Find(&building,
 			"name = ?",
-			p.Name)
+			q.Name)
 	if building.ID > 0 {
-		//not found
+		//oops found
 		return 0, ErrRecordExists
 	}
-
-	//  all floors
-	var floors []BuildingFloor
-	for _, f := range p.Floors {
-		floors = append(floors,
-			BuildingFloor{
-				BuildingID: building.ID,
-				Floor:      f,
-			})
-	}
-	bdata := Building{
-		Name:           *p.Name,
-		Address:        p.Address,
-		BuildingFloors: floors,
-	}
-
 	//sync run
 	err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
-		return transaction.Create(&bdata).Error
+		return transaction.Create(q).Error
 	})
 
-	if err != nil || bdata.ID <= 0 {
+	if err != nil || q.ID <= 0 {
 		log.Println("Failed::Create", err)
 		//not found
 		return 0, ErrDBTransaction
 	}
-	return bdata.ID, nil
+	return q.ID, nil
 }
 
-// UPDATE
-
-// BuildingUpdateParams update parameter
-type BuildingUpdateParams struct {
-	ID *int64 `json:"id"`
-	BuildingCreateParams
-}
-
-// NewBuildingUpdate new instance
-func NewBuildingUpdate() *BuildingUpdateParams {
-	return &BuildingUpdateParams{}
-}
-
-// Update a row from the store
-func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
+// Update modify old data
+func (q *Building) Update(dbh *gorm.DB) error {
 	var err error
 	//1 record by id
 	var building Building
 	dbh.
 		Set("gorm:query_option", "FOR UPDATE").
 		Preload("BuildingFloors").
-		Find(&building, *p.ID)
+		Find(&building, q.ID)
 
 	//not found
 	if building.ID <= 0 {
@@ -202,8 +155,8 @@ func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 			Model(&building).
 			Updates(
 				Building{
-					Name:    *p.Name,
-					Address: p.Address,
+					Name:    q.Name,
+					Address: q.Address,
 				}).Error
 
 		if terr != nil {
@@ -230,10 +183,10 @@ func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 	}
 
 	//set all floors
-	for _, floor := range p.Floors {
+	for _, f := range q.BuildingFloors {
 		fdata := BuildingFloor{
 			BuildingID: building.ID,
-			Floor:      floor,
+			Floor:      f.Floor,
 		}
 
 		err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
@@ -248,26 +201,14 @@ func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 	return nil
 }
 
-// DELETE
-
-// BuildingDeleteParams delete parameter
-type BuildingDeleteParams struct {
-	ID int64 `json:"id"`
-}
-
-// NewBuildingDelete new instance
-func NewBuildingDelete(pid int64) *BuildingDeleteParams {
-	return &BuildingDeleteParams{ID: pid}
-}
-
 // Delete remove a row from the store base on id
-func (p *BuildingDeleteParams) Delete(dbh *gorm.DB) error {
+func (q *Building) Delete(dbh *gorm.DB) error {
 	var err error
 	// Get 1 record by id
 	var building Building
 	dbh.
 		Preload("BuildingFloors").
-		Find(&building, p.ID)
+		Find(&building, q.ID)
 
 	//not found
 	if building.ID <= 0 {
