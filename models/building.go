@@ -228,3 +228,45 @@ func (q *Building) Delete(dbh *gorm.DB) error {
 	}
 	return nil
 }
+
+// CALLBACKS
+
+// BeforeSave callback before save
+func (q *Building) BeforeSave() (err error) {
+	return
+}
+
+// AfterSave callback after save
+func (q *Building) AfterSave(dbh *gorm.DB) (err error) {
+	return
+}
+
+// BeforeCreate callback before create
+func (q *Building) BeforeCreate() (err error) {
+	return
+}
+
+// AfterCreate callback after create
+func (q *Building) AfterCreate(dbh *gorm.DB) (err error) {
+	return
+}
+
+// BeforeUpdate callback before update
+func (q *Building) BeforeUpdate() (err error) {
+	return
+}
+
+// AfterUpdate callback after update
+func (q *Building) AfterUpdate(dbh *gorm.DB) (err error) {
+	return
+}
+
+// BeforeDelete callback before remove
+func (q *Building) BeforeDelete() (err error) {
+	return
+}
+
+// AfterDelete callback after remove
+func (q *Building) AfterDelete(dbh *gorm.DB) (err error) {
+	return
+}
