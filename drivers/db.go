@@ -97,7 +97,8 @@ func (dh *DBHandle) PrepareDB(dbtype, conn string) *DBHandle {
 
 		dbh.DB().SetMaxOpenConns(3)
 
-		// Set the number of open and idle connection to a maximum total of (idle:2 + open:3) = 5
+		// Set the number of open and idle connection
+		// to a maximum total of (idle:2 + open:3) = 5
 
 		//save it
 		dh.connections = append(dh.connections, dbh)

@@ -29,7 +29,7 @@ var _ = BeforeSuite(func() {
 		routes.WithSvcOptConfig(tools.DevelTester{}.Config()),
 	)
 	Expect(err).NotTo(HaveOccurred())
-
+	tools.DevelTester{}.EmptyDBTst(svcrouter.Building.Storage)
 })
 
 var _ = AfterSuite(func() {

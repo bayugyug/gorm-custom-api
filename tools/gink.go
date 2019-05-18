@@ -23,4 +23,5 @@ func (h DevelTester) Config() *configs.ParameterConfig {
 func (h DevelTester) EmptyDBTst(storage *gorm.DB) {
 	// Select all records from a model and delete all
 	storage.Model(&models.Building{}).Delete(&models.Building{})
+	// storage.Exec("DELETE FROM buildings;")
 }

@@ -82,7 +82,9 @@ func NewBuildingGetOne(id int64) *BuildingGetParams {
 func (p *BuildingGetParams) Get(dbh *gorm.DB) (*Building, error) {
 	// Get 1 record by id
 	var building Building
-	dbh.Preload("BuildingFloors").Find(&building, p.ID)
+	dbh.
+		Preload("BuildingFloors").
+		Find(&building, p.ID)
 	if building.ID <= 0 {
 		//not found
 		return nil, ErrRecordMismatch
@@ -196,8 +198,7 @@ func (p *BuildingUpdateParams) Update(dbh *gorm.DB) error {
 
 	//sync run
 	err = drivers.SyncRunTx(dbh, func(transaction *gorm.DB) error {
-		var terr error
-		terr = transaction.
+		terr := transaction.
 			Model(&building).
 			Updates(
 				Building{
