@@ -58,11 +58,9 @@ func (dh *DBHandle) PrepareDB(dbtype, conn string) *DBHandle {
 	for k, v := range DBParams {
 		opts = append(opts, fmt.Sprintf("%s=%s", k, url.QueryEscape(v)))
 	}
-	optss := strings.Join(opts, "&")
-	log.Println(optss)
-
+	log.Println("DB:", conn, strings.Join(opts, "&"))
 	for i := 1; i <= 5; i++ {
-		dbh, err := gorm.Open("mysql", fmt.Sprintf("%s?%s", conn, optss))
+		dbh, err := gorm.Open("mysql", fmt.Sprintf("%s?%s", conn, strings.Join(opts, "&")))
 		if err != nil {
 			log.Println("DB::OPEN", err, conn)
 			time.Sleep(time.Millisecond * 1000)

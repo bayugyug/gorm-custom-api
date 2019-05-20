@@ -23,6 +23,8 @@ type BuildingEndpoints interface {
 	GetAll(w http.ResponseWriter, r *http.Request)
 	GetOne(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request)
+	HealthCheck(w http.ResponseWriter, r *http.Request)
+	Welcome(w http.ResponseWriter, r *http.Request)
 }
 
 // Response is the reply object
