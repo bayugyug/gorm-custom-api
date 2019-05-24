@@ -1,8 +1,6 @@
 package services
 
 import (
-	"net/http"
-
 	"github.com/bayugyug/gorm-custom-api/models"
 	"github.com/bayugyug/gorm-custom-api/tools"
 	"github.com/jinzhu/gorm"
@@ -69,9 +67,8 @@ func (s *BuildingService) Get(dbh *gorm.DB, p *BuildingGetParams) (*models.Build
 }
 
 // GetAll query all from the db
-func (s *BuildingService) GetAll(dbh *gorm.DB, r *http.Request) ([]models.Building, int, error) {
+func (s *BuildingService) GetAll(dbh *gorm.DB, paging *tools.PagingParams) ([]models.Building, int, error) {
 	//prepare
-	paging := tools.NewPagingParams(r)
 	return models.NewBuildingData().GetAll(dbh, paging.Page, paging.Limit)
 }
 

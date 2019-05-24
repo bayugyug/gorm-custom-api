@@ -121,7 +121,6 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 				}
 				Expect(w2.Code).To(Equal(http.StatusOK))
 				Expect(response2.Status).To(Equal("success"))
-				Expect(response2.Total).Should(BeNumerically(">", 0))
 				By("Get more data ok")
 			})
 		})

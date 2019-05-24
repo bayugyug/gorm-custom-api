@@ -161,11 +161,18 @@ var _ = Describe("REST Building API Service::MODELS", func() {
 					Expect(pid).Should(BeNumerically(">", 0))
 					By("Create data before get list ok")
 				}
-				rows, err := service.GetAll(store)
+
+				rows, total, err := service.GetAll(
+					store,
+					&tools.PagingParams{
+						Page:  1,
+						Limit: 10,
+					})
 				if err != nil {
 					Fail(err.Error())
 				}
 				Expect(len(rows)).Should(BeNumerically(">", 0))
+				Expect(total).Should(BeNumerically(">", 0))
 				By("Get more data ok")
 			})
 		})

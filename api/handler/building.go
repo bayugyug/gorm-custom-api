@@ -10,6 +10,7 @@ import (
 	"github.com/bayugyug/gorm-custom-api/configs"
 	"github.com/bayugyug/gorm-custom-api/models"
 	"github.com/bayugyug/gorm-custom-api/services"
+	"github.com/bayugyug/gorm-custom-api/tools"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
@@ -31,7 +32,6 @@ type BuildingEndpoints interface {
 type Response struct {
 	Status string      `json:"status"`
 	Result interface{} `json:"result,omitempty"`
-	Total  int         `json:"total,omitempty"`
 }
 
 // Building the api handler
@@ -141,7 +141,8 @@ func (b *Building) Update(w http.ResponseWriter, r *http.Request) {
 func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	svc := services.NewBuildingService()
 	//check
-	rows, tot, err := svc.GetAll(b.Storage, r)
+	paging := tools.NewPagingParams(r)
+	rows, tot, err := svc.GetAll(b.Storage, paging)
 	//chk
 	if err != nil {
 		log.Println("GETALL", err)
@@ -152,8 +153,12 @@ func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	//good
 	render.JSON(w, r, Response{
 		Status: "success",
-		Result: rows,
-		Total:  tot,
+		Result: map[string]interface{}{
+			"data":  rows,
+			"page":  paging.Page,
+			"limit": paging.Limit,
+			"total": tot,
+		},
 	})
 }
 

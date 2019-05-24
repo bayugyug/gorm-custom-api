@@ -87,67 +87,95 @@ curl -X GET    'http://127.0.0.1:8989/v1/api/building/2'
 }
 
 
-#get all records
-curl -X GET    'http://127.0.0.1:8989/v1/api/building'
+#get set of records
+curl -X GET    'http://127.0.0.1:8989/v1/api/building?page=1&limit=5'
 {
   "status": "success",
-  "result": [
-    {
-      "id": 1,
-      "name": "dhaha-ddbuilding-283",
-      "address": "address here dabis",
-      "created_at": "2019-05-12T12:19:37+08:00",
-      "updated_at": "2019-05-12T12:19:37+08:00",
-      "floors": [
-        {
-          "floor": "floor-1"
-        },
-        {
-          "floor": "floor-2e"
-        },
-        {
-          "floor": "yfldoor-1"
-        },
-        {
-          "floor": "zfloor-2e"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "name": "building-a",
-      "address": "address here",
-      "created_at": "2019-05-12T12:48:27+08:00",
-      "updated_at": "2019-05-12T12:48:27+08:00",
-      "floors": [
-        {
-          "floor": "floor-1"
-        },
-        {
-          "floor": "floor-2"
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "name": "building-a",
-      "address": "updated address here2",
-      "created_at": "2019-05-12T12:49:21+08:00",
-      "updated_at": "2019-05-12T12:49:47+08:00",
-      "floors": [
-        {
-          "floor": "floor-a1"
-        },
-        {
-          "floor": "floor-a2"
-        },
-        {
-          "floor": "floor-a3"
-        }
-      ]
-    }
-  ],
-  "total": 3
+  "result": {
+    "data": [
+      {
+        "id": 1216,
+        "name": "new-building-a2",
+        "address": "updated address here2",
+        "created_at": "2019-05-18T12:27:15+08:00",
+        "updated_at": "2019-05-18T12:29:10+08:00",
+        "floors": [
+          {
+            "floor": "floor-a1"
+          },
+          {
+            "floor": "floor-a2"
+          },
+          {
+            "floor": "floor-a3"
+          }
+        ]
+      },
+      {
+        "id": 1217,
+        "name": "new-18136-4653-26351",
+        "address": "address here::26931",
+        "created_at": "2019-05-18T12:31:28+08:00",
+        "updated_at": "2019-05-18T12:31:28+08:00",
+        "floors": [
+          {
+            "floor": "floor-1-7934"
+          },
+          {
+            "floor": "floor-2-17795"
+          }
+        ]
+      },
+      {
+        "id": 1218,
+        "name": "new-2612-31403-30846",
+        "address": "address here::8888",
+        "created_at": "2019-05-18T12:31:29+08:00",
+        "updated_at": "2019-05-18T12:31:29+08:00",
+        "floors": [
+          {
+            "floor": "floor-1-4892"
+          },
+          {
+            "floor": "floor-2-14444"
+          }
+        ]
+      },
+      {
+        "id": 1219,
+        "name": "new-4231-18081-30101",
+        "address": "address here::13645",
+        "created_at": "2019-05-18T12:31:29+08:00",
+        "updated_at": "2019-05-18T12:31:29+08:00",
+        "floors": [
+          {
+            "floor": "floor-1-23246"
+          },
+          {
+            "floor": "floor-2-8658"
+          }
+        ]
+      },
+      {
+        "id": 1220,
+        "name": "new-1009-943-181",
+        "address": "address here::1332",
+        "created_at": "2019-05-18T12:31:29+08:00",
+        "updated_at": "2019-05-18T12:31:29+08:00",
+        "floors": [
+          {
+            "floor": "floor-1-8116"
+          },
+          {
+            "floor": "floor-2-28677"
+          }
+        ]
+      }
+    ],
+    "limit": 5,
+    "page": 1,
+    "total": 102
+  }
 }
 
 
