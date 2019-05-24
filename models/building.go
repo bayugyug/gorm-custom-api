@@ -91,19 +91,27 @@ func (q *Building) Get(dbh *gorm.DB) (*Building, error) {
 }
 
 // GetAll query all from the db
-func (q *Building) GetAll(dbh *gorm.DB) ([]Building, error) {
+func (q *Building) GetAll(dbh *gorm.DB, page, limit int) ([]Building, int, error) {
 	// Get all records
 	var buildings []Building
+	total := 0
 	dbh.
 		Preload("BuildingFloors").
-		Find(&buildings)
+		Offset((page - 1) * limit).
+		Limit(limit).
+		Find(&buildings).
+		Offset(0).
+		Model(&Building{}).
+		Limit(-1).
+		Count(&total)
 
+	log.Println("PAGE: ", page, "LIMIT: ", limit, ", TOTAL: ", total)
 	//empty
 	if len(buildings) <= 0 {
-		return buildings, ErrRecordsNotFound
+		return buildings, 0, ErrRecordsNotFound
 	}
 
-	return buildings, nil
+	return buildings, total, nil
 }
 
 // Create add a row from the store

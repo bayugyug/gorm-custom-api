@@ -141,7 +141,7 @@ func (b *Building) Update(w http.ResponseWriter, r *http.Request) {
 func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	svc := services.NewBuildingService()
 	//check
-	rows, err := svc.GetAll(b.Storage)
+	rows, tot, err := svc.GetAll(b.Storage, r)
 	//chk
 	if err != nil {
 		log.Println("GETALL", err)
@@ -153,7 +153,7 @@ func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, Response{
 		Status: "success",
 		Result: rows,
-		Total:  len(rows),
+		Total:  tot,
 	})
 }
 

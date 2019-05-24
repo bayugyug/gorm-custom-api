@@ -15,4 +15,5 @@ require (
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
 	github.com/uudashr/gopkgs v2.0.1+incompatible // indirect
+	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
 )
