@@ -162,7 +162,7 @@ var _ = Describe("REST Building API Service::MODELS", func() {
 					By("Create data before get list ok")
 				}
 
-				rows, total, err := service.GetAll(
+				rows, err := service.GetAll(
 					store,
 					&tools.PagingParams{
 						Page:  1,
@@ -171,8 +171,8 @@ var _ = Describe("REST Building API Service::MODELS", func() {
 				if err != nil {
 					Fail(err.Error())
 				}
-				Expect(len(rows)).Should(BeNumerically(">", 0))
-				Expect(total).Should(BeNumerically(">", 0))
+				Expect(len(rows.Items)).Should(BeNumerically(">", 0))
+				Expect(rows.Total).Should(BeNumerically(">", 0))
 				By("Get more data ok")
 			})
 		})

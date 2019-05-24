@@ -92,7 +92,7 @@ curl -X GET    'http://127.0.0.1:8989/v1/api/building?page=1&limit=5'
 {
   "status": "success",
   "result": {
-    "data": [
+    "items": [
       {
         "id": 1216,
         "name": "new-building-a2",
@@ -172,8 +172,8 @@ curl -X GET    'http://127.0.0.1:8989/v1/api/building?page=1&limit=5'
         ]
       }
     ],
-    "limit": 5,
     "page": 1,
+    "limit": 5,
     "total": 102
   }
 }

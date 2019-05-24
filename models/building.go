@@ -65,6 +65,14 @@ func (BuildingFloor) TableName() string {
 	return "building_floors"
 }
 
+// BuildingGetResults table buildings query list
+type BuildingGetResults struct {
+	Items []Building `json:"items,omitempty"`
+	Page  int        `json:"page,omitempty"`
+	Limit int        `json:"limit,omitempty"`
+	Total int        `json:"total,omitempty"`
+}
+
 // NewBuildingData new instance
 func NewBuildingData() *Building {
 	return &Building{}
@@ -91,7 +99,7 @@ func (q *Building) Get(dbh *gorm.DB) (*Building, error) {
 }
 
 // GetAll query all from the db
-func (q *Building) GetAll(dbh *gorm.DB, page, limit int) ([]Building, int, error) {
+func (q *Building) GetAll(dbh *gorm.DB, page, limit int) (BuildingGetResults, error) {
 	// Get all records
 	var buildings []Building
 	total := 0
@@ -108,10 +116,15 @@ func (q *Building) GetAll(dbh *gorm.DB, page, limit int) ([]Building, int, error
 	log.Println("PAGE: ", page, "LIMIT: ", limit, ", TOTAL: ", total)
 	//empty
 	if len(buildings) <= 0 {
-		return buildings, 0, ErrRecordsNotFound
+		return BuildingGetResults{}, ErrRecordsNotFound
 	}
 
-	return buildings, total, nil
+	return BuildingGetResults{
+		Items: buildings,
+		Page:  page,
+		Limit: limit,
+		Total: total,
+	}, nil
 }
 
 // Create add a row from the store

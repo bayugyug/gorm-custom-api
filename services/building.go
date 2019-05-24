@@ -67,7 +67,7 @@ func (s *BuildingService) Get(dbh *gorm.DB, p *BuildingGetParams) (*models.Build
 }
 
 // GetAll query all from the db
-func (s *BuildingService) GetAll(dbh *gorm.DB, paging *tools.PagingParams) ([]models.Building, int, error) {
+func (s *BuildingService) GetAll(dbh *gorm.DB, paging *tools.PagingParams) (models.BuildingGetResults, error) {
 	//prepare
 	return models.NewBuildingData().GetAll(dbh, paging.Page, paging.Limit)
 }

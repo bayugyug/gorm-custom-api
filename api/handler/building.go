@@ -142,7 +142,7 @@ func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	svc := services.NewBuildingService()
 	//check
 	paging := tools.NewPagingParams(r)
-	rows, tot, err := svc.GetAll(b.Storage, paging)
+	rows, err := svc.GetAll(b.Storage, paging)
 	//chk
 	if err != nil {
 		log.Println("GETALL", err)
@@ -153,12 +153,7 @@ func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	//good
 	render.JSON(w, r, Response{
 		Status: "success",
-		Result: map[string]interface{}{
-			"data":  rows,
-			"page":  paging.Page,
-			"limit": paging.Limit,
-			"total": tot,
-		},
+		Result: rows,
 	})
 }
 
