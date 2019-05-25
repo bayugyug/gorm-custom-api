@@ -23,7 +23,11 @@ test : clean
 	go test $(TEST_FILES) -bench=. -test.benchmem -v 2>/dev/null | gobench2plot > benchmarks.xml
 	ginkgo -v  ./... > gink.txt
 
-testginkgo : build
+testlint : clean
+	time golint  $(TEST_FILES) > lint.txt
+	time go vet -v $(TEST_FILES) > vet.txt
+
+testginkgo : clean
 	ginkgo -v  ./...
 
 testrun : clean test

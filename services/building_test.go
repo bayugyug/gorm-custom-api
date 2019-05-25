@@ -26,18 +26,19 @@ var _ = BeforeSuite(func() {
 		routes.WithSvcOptConfig(tools.DevelTester{}.Config()),
 	)
 	Expect(err).NotTo(HaveOccurred())
-	tools.DevelTester{}.EmptyDBTst(svcrouter.Building.Storage)
+	tools.DevelTester{}.EmptyDBTst(svcrouter.DBHandle.GetConnection())
+	//globally
+	store = svcrouter.DBHandle.GetConnection()
+	service = services.NewBuildingService()
 })
 
 var _ = AfterSuite(func() {
-	tools.DevelTester{}.EmptyDBTst(svcrouter.Building.Storage)
+	tools.DevelTester{}.EmptyDBTst(svcrouter.DBHandle.GetConnection())
 })
 
 var _ = Describe("REST Building API Service::MODELS", func() {
 
 	BeforeEach(func() {
-		store = svcrouter.Building.Storage
-		service = services.NewBuildingService()
 	})
 
 	Context("Valid parameters", func() {

@@ -29,11 +29,11 @@ var _ = BeforeSuite(func() {
 		routes.WithSvcOptConfig(tools.DevelTester{}.Config()),
 	)
 	Expect(err).NotTo(HaveOccurred())
-	tools.DevelTester{}.EmptyDBTst(svcrouter.Building.Storage)
+	tools.DevelTester{}.EmptyDBTst(svcrouter.DBHandle.GetConnection())
 })
 
 var _ = AfterSuite(func() {
-	tools.DevelTester{}.EmptyDBTst(svcrouter.Building.Storage)
+	tools.DevelTester{}.EmptyDBTst(svcrouter.DBHandle.GetConnection())
 })
 
 var _ = Describe("REST Building API Service::HANDLERS", func() {
@@ -43,11 +43,11 @@ var _ = Describe("REST Building API Service::HANDLERS", func() {
 
 	BeforeEach(func() {
 		router = chi.NewRouter()
-		router.Post("/v1/api/building", svcrouter.Building.Create)
-		router.Put("/v1/api/building", svcrouter.Building.Update)
-		router.Get("/v1/api/building", svcrouter.Building.GetAll)
-		router.Get("/v1/api/building/{id}", svcrouter.Building.GetOne)
-		router.Delete("/v1/api/building/{id}", svcrouter.Building.Delete)
+		router.Post("/v1/api/building", svcrouter.Handlers.BuildingHandler.Create)
+		router.Put("/v1/api/building", svcrouter.Handlers.BuildingHandler.Update)
+		router.Get("/v1/api/building", svcrouter.Handlers.BuildingHandler.GetAll)
+		router.Get("/v1/api/building/{id}", svcrouter.Handlers.BuildingHandler.GetOne)
+		router.Delete("/v1/api/building/{id}", svcrouter.Handlers.BuildingHandler.Delete)
 	})
 
 	Context("Valid parameters", func() {

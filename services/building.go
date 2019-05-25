@@ -49,6 +49,15 @@ func NewBuildingDelete(pid int64) *BuildingDeleteParams {
 	return &BuildingDeleteParams{ID: pid}
 }
 
+// BuildingServiceBridge is the interface creator
+type BuildingServiceBridge interface {
+	Get(dbh *gorm.DB, p *BuildingGetParams) (*models.Building, error)
+	GetAll(dbh *gorm.DB, p *tools.PagingParams) (models.BuildingGetResults, error)
+	Create(dbh *gorm.DB, p *BuildingCreateParams) (int64, error)
+	Update(dbh *gorm.DB, p *BuildingUpdateParams) error
+	Delete(dbh *gorm.DB, p *BuildingDeleteParams) error
+}
+
 // BuildingService service creator
 type BuildingService struct {
 }

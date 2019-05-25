@@ -13,6 +13,7 @@ import (
 	"github.com/bayugyug/gorm-custom-api/api/handler"
 	"github.com/bayugyug/gorm-custom-api/configs"
 	"github.com/bayugyug/gorm-custom-api/drivers"
+	"github.com/bayugyug/gorm-custom-api/services"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -22,11 +23,11 @@ import (
 
 // APIRouter the svc map
 type APIRouter struct {
-	Building *handler.Building
 	Mux      *chi.Mux
 	Address  string
 	Config   *configs.ParameterConfig
 	DBHandle *drivers.DBHandle
+	Handlers *Handler
 }
 
 // Setup options settings
@@ -47,9 +48,9 @@ func WithSvcOptMux(m *chi.Mux) Setup {
 }
 
 // WithSvcOptHandler opts for handler
-func WithSvcOptHandler(r *handler.Building) Setup {
+func WithSvcOptHandler(r *Handler) Setup {
 	return func(args *APIRouter) {
-		args.Building = r
+		args.Handlers = r
 	}
 }
 
@@ -79,13 +80,24 @@ func NewAPIRouter(opts ...Setup) (*APIRouter, error) {
 	if db == nil {
 		return svc, fmt.Errorf("DB Connect failed")
 	}
-	//db storage
-	svc.Building = handler.NewBuilding(db)
+	//handlers
+	svc.Handlers = svc.GetHandlers()
 	//set the actual router
 	svc.Mux = svc.MapRoute()
-
 	//good :-)
 	return svc, nil
+}
+
+// GetHandlers is the mapping of all the handlers
+func (svc *APIRouter) GetHandlers() *Handler {
+	//attached all handlers per service
+	handlers := &Handler{
+		BuildingHandler: handler.NewBuilding(
+			svc.DBHandle,
+			services.NewBuildingService(),
+		),
+	}
+	return handlers
 }
 
 // Run the http server based on settings
@@ -152,8 +164,8 @@ func (svc *APIRouter) MapRoute() *chi.Mux {
 
 	router.Use(cors.Handler)
 
-	router.Get("/", svc.Building.Welcome)
-	router.Get("/health", svc.Building.HealthCheck)
+	router.Get("/", svc.Handlers.BuildingHandler.Welcome)
+	router.Get("/health", svc.Handlers.BuildingHandler.HealthCheck)
 
 	/*
 		@end-points
@@ -168,17 +180,17 @@ func (svc *APIRouter) MapRoute() *chi.Mux {
 	//end-points-mapping
 	router.Route("/v1", func(r chi.Router) {
 		r.Mount("/api",
-			func(h *handler.Building) *chi.Mux {
+			func(h *Handler) *chi.Mux {
 				sr := chi.NewRouter()
-				sr.Get("/health", h.HealthCheck)
-				sr.Post("/building", h.Create)
-				sr.Put("/building", h.Update)
-				sr.Patch("/building", h.Update)
-				sr.Get("/building", h.GetAll)
-				sr.Get("/building/{id}", h.GetOne)
-				sr.Delete("/building/{id}", h.Delete)
+				sr.Get("/health", h.BuildingHandler.HealthCheck)
+				sr.Post("/building", h.BuildingHandler.Create)
+				sr.Put("/building", h.BuildingHandler.Update)
+				sr.Patch("/building", h.BuildingHandler.Update)
+				sr.Get("/building", h.BuildingHandler.GetAll)
+				sr.Get("/building/{id}", h.BuildingHandler.GetOne)
+				sr.Delete("/building/{id}", h.BuildingHandler.Delete)
 				return sr
-			}(svc.Building))
+			}(svc.Handlers))
 	})
 	//show
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
@@ -190,4 +202,20 @@ func (svc *APIRouter) MapRoute() *chi.Mux {
 		fmt.Printf("Logging err: %s\n", err.Error())
 	}
 	return router
+}
+
+// Handler wraps all handler
+type Handler struct {
+	BuildingHandler buildingHandler
+}
+
+// list of all the handlers mapping
+type buildingHandler interface {
+	Create(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	GetAll(w http.ResponseWriter, r *http.Request)
+	GetOne(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
+	HealthCheck(w http.ResponseWriter, r *http.Request)
+	Welcome(w http.ResponseWriter, r *http.Request)
 }

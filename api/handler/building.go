@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/bayugyug/gorm-custom-api/configs"
+	"github.com/bayugyug/gorm-custom-api/drivers"
 	"github.com/bayugyug/gorm-custom-api/models"
 	"github.com/bayugyug/gorm-custom-api/services"
 	"github.com/bayugyug/gorm-custom-api/tools"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
-	"github.com/jinzhu/gorm"
 )
 
 // BuildingEndpoints the end-points-url mapping
@@ -28,6 +28,13 @@ type BuildingEndpoints interface {
 	Welcome(w http.ResponseWriter, r *http.Request)
 }
 
+// BuildingHandlerBridge is the service bridge connector
+//
+//go:generate mockery -inpkg -case underscore -name BuildingHandlerBridge
+type BuildingHandlerBridge interface {
+	services.BuildingServiceBridge
+}
+
 // Response is the reply object
 type Response struct {
 	Status string      `json:"status"`
@@ -36,13 +43,15 @@ type Response struct {
 
 // Building the api handler
 type Building struct {
-	Storage *gorm.DB
+	Storage               *drivers.DBHandle
+	BuildingHandlerBridge BuildingHandlerBridge
 }
 
 // NewBuilding new instance
-func NewBuilding(conn *gorm.DB) *Building {
+func NewBuilding(dbh *drivers.DBHandle, svc BuildingHandlerBridge) *Building {
 	return &Building{
-		Storage: conn,
+		Storage:               dbh,
+		BuildingHandlerBridge: svc,
 	}
 }
 
@@ -65,7 +74,7 @@ func (b *Building) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	svc := services.NewBuildingService()
-	pid, err := svc.Create(b.Storage,
+	pid, err := svc.Create(b.Storage.GetConnection(),
 		&services.BuildingCreateParams{
 			Name:    fdata.Name,
 			Address: fdata.Address,
@@ -113,7 +122,7 @@ func (b *Building) Update(w http.ResponseWriter, r *http.Request) {
 	data.Floors = fdata.Floors
 
 	//check
-	if err := svc.Update(b.Storage, data); err != nil {
+	if err := svc.Update(b.Storage.GetConnection(), data); err != nil {
 		log.Println("UPDATE", err)
 		switch err {
 		case models.ErrRecordMismatch:
@@ -142,7 +151,7 @@ func (b *Building) GetAll(w http.ResponseWriter, r *http.Request) {
 	svc := services.NewBuildingService()
 	//check
 	paging := tools.NewPagingParams(r)
-	rows, err := svc.GetAll(b.Storage, paging)
+	rows, err := svc.GetAll(b.Storage.GetConnection(), paging)
 	//chk
 	if err != nil {
 		log.Println("GETALL", err)
@@ -169,7 +178,7 @@ func (b *Building) GetOne(w http.ResponseWriter, r *http.Request) {
 
 	//check
 	svc := services.NewBuildingService()
-	row, err := svc.Get(b.Storage, services.NewBuildingGetOne(fdata.ID))
+	row, err := svc.Get(b.Storage.GetConnection(), services.NewBuildingGetOne(fdata.ID))
 	//chk
 	if err != nil {
 		log.Println("GET1", err)
@@ -196,7 +205,7 @@ func (b *Building) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//chk
-	if err := svc.Delete(b.Storage, data); err != nil {
+	if err := svc.Delete(b.Storage.GetConnection(), data); err != nil {
 		log.Println("DELETE", err)
 		switch err {
 		case models.ErrRecordNotFound:
